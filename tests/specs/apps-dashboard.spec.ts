@@ -78,3 +78,42 @@ test('Launch authorized client', async ({ page }) => {
 		client.launchURL
 	);
 });
+
+test('Dashboard shows client description when present', async ({ page, request }) => {
+	const clientWithDesc = oidcClients.withDescription;
+
+	// Update the client to have a description via API
+	await request.put(`/api/oidc/clients/${clientWithDesc.id}`, {
+		data: {
+			name: clientWithDesc.name,
+			description: clientWithDesc.description,
+			callbackURLs: [clientWithDesc.callbackUrl],
+			logoutCallbackURLs: [],
+			isPublic: false,
+			pkceEnabled: false,
+			requiresReauthentication: false,
+			requiresPushedAuthorizationRequests: false,
+			credentials: { federatedIdentities: [] },
+			isGroupRestricted: false
+		}
+	});
+
+	await page.goto('/settings/apps');
+
+	// Find the card with the description
+	const card = page.getByTestId('authorized-oidc-client-card').filter({ hasText: clientWithDesc.name });
+
+	// Should show description instead of hostname
+	await expect(card.getByText(clientWithDesc.description)).toBeVisible();
+});
+
+test('Dashboard shows hostname when description is not present', async ({ page }) => {
+	const clientWithoutDesc = oidcClients.nextcloud;
+
+	await page.goto('/settings/apps');
+
+	const card = page.getByTestId('authorized-oidc-client-card').filter({ hasText: clientWithoutDesc.name });
+
+	// Should show hostname
+	await expect(card.getByText(new URL(clientWithoutDesc.launchURL).hostname)).toBeVisible();
+});

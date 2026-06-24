@@ -73,6 +73,13 @@ export const oidcClients = {
 		name: 'PAR Test Client',
 		callbackUrl: 'http://par-client.localhost/auth/callback',
 		secret: 'w2mUeZISmEvIDMEDvpY0PnxQIpj1m3zY'
+	},
+	withDescription: {
+		id: 'd5e6f7g8-h9i0-1234-jklm-nopqrstuvwx',
+		name: 'Client With Description',
+		callbackUrl: 'http://desc-client.localhost/auth/callback',
+		launchURL: 'https://desc-client.local',
+		description: 'This is a test description for the OIDC client'
 	}
 };
 

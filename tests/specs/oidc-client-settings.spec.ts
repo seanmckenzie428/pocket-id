@@ -176,3 +176,58 @@ test('Update OIDC client allowed user groups', async ({ page }) => {
 		page.getByRole('row', { name: userGroups.developers.name }).getByRole('checkbox')
 	).toHaveAttribute('data-state', 'checked');
 });
+
+test('Create OIDC client with description', async ({ page }) => {
+	const oidcClient = oidcClients.withDescription;
+	await page.goto('/settings/admin/oidc-clients');
+	await page.getByRole('button', { name: 'Add OIDC Client' }).click();
+
+	await page.getByLabel('Name').fill(oidcClient.name);
+	await page.getByLabel('Description').fill(oidcClient.description);
+	await page.getByLabel('Client Launch URL').fill(oidcClient.launchURL);
+
+	await page.getByRole('button', { name: 'Add' }).first().click();
+	await page.getByTestId('callback-url-1').fill(oidcClient.callbackUrl);
+
+	await page.getByRole('button', { name: 'Save' }).click();
+
+	await expect(page.locator('[data-type="success"]')).toHaveText(
+		'OIDC client created successfully'
+	);
+
+	// Verify description is saved
+	await expect(page.getByLabel('Description')).toHaveValue(oidcClient.description);
+});
+
+test('Edit OIDC client description', async ({ page }) => {
+	const oidcClient = oidcClients.withDescription;
+	await page.goto(`/settings/admin/oidc-clients/${oidcClient.id}`);
+
+	// Update description
+	const newDescription = 'Updated description for the test client';
+	await page.getByLabel('Description').fill(newDescription);
+	await page.getByRole('button', { name: 'Save' }).click();
+
+	await expect(page.locator('[data-type="success"]')).toHaveText(
+		'OIDC client updated successfully'
+	);
+
+	// Verify description was updated
+	await expect(page.getByLabel('Description')).toHaveValue(newDescription);
+});
+
+test('Clear OIDC client description', async ({ page }) => {
+	const oidcClient = oidcClients.withDescription;
+	await page.goto(`/settings/admin/oidc-clients/${oidcClient.id}`);
+
+	// Clear description
+	await page.getByLabel('Description').clear();
+	await page.getByRole('button', { name: 'Save' }).click();
+
+	await expect(page.locator('[data-type="success"]')).toHaveText(
+		'OIDC client updated successfully'
+	);
+
+	// Verify description is empty
+	await expect(page.getByLabel('Description')).toHaveValue('');
+});
